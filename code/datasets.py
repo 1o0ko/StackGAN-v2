@@ -416,6 +416,20 @@ class SsenseDataset(data.Dataset):
             'LACE UPS': 35, 'SCARVES': 15, 'SANDALS': 30, 'BACKPACKS': 24, 'SKIRTS': 9
         }
 
+        self.pose2idx = {
+            'id_gridfs_1': 0,
+            'id_gridfs_2': 1,
+            'id_gridfs_3': 2,
+            'id_gridfs_4': 3,
+            'id_gridfs_5': 4,
+            'id_gridfs_6': 5,
+            'id_gridfs_7': 6,
+            'id_gridfs_8': 7,
+        }
+        self.idx2pose = {
+            v: str(k)
+            for k, v in self.pose2idx.iteritems()
+        }
         self.max_desc_length = max_len
         self.dictionary = Dictionary(vocab_path)
         self.split_name = split_name
@@ -439,6 +453,7 @@ class SsenseDataset(data.Dataset):
         self.images = self.load_h5_images(split_dir)
         self.categories = self.load_categories(split_dir)
         self.descriptions = self.load_descriptions(split_dir)
+        self.poses = self.load_h5_poses(split_dir)
 
         if cfg.TRAIN.FLAG:
             self.iterator = self.prepair_training_pairs
@@ -475,6 +490,16 @@ class SsenseDataset(data.Dataset):
             print('loaded Categories, shape: ', categories.shape)
 
         return categories
+
+    def load_h5_poses(self, data_dir):
+        pose_filename = '/ssense_%d_%d_%s.h5' % (
+            self.orig_imsize, self.orig_imsize, self.split_name)
+        print("Loading image file from %s" % pose_filename)
+        with h5py.File(data_dir + pose_filename) as pose_file:
+            poses = np.asarray(pose_file['input_pose'].value)
+            print('loaded images, shape: ', poses.shape)
+            self.data_size = poses.shape[0]
+        return poses
 
     def load_h5_images(self, data_dir):
         filename = '%s_%s.h5' % (self.dataset_name, self.split_name)
@@ -516,7 +541,14 @@ class SsenseDataset(data.Dataset):
         wrong_img = Image.fromarray(wrong_img.astype('uint8'), 'RGB').convert('RGB')
         wrong_imgs = transform_img(wrong_img, self.imsize, self.transform, normalize=self.norm)
 
-        return imgs, wrong_imgs, desc_tensor, desc  # captions
+        poses = self.poses[index]
+        poses_array = np.empty(poses.shape)
+        for i in range(len(poses_array)):
+            poses_array[i] = self.pose2idx[poses[i]]
+
+        poses = torch.from_numpy(poses_array).type(torch.LongTensor)
+
+        return imgs, wrong_imgs, desc_tensor, poses, desc  # captions
 
     def prepair_test_pairs(self, index):
         img = self.images[index]
@@ -528,7 +560,14 @@ class SsenseDataset(data.Dataset):
         desc_ids = self.pad_sequence(desc_ids)
         desc_tensor = torch.from_numpy(desc_ids).type(torch.LongTensor)
 
-        return imgs, desc_tensor, index  # captions
+        poses = self.poses[index]
+        poses_array = np.empty(poses.shape)
+        for i in range(len(poses_array)):
+            poses_array[i] = self.pose2idx[poses[i]]
+
+        poses = torch.from_numpy(poses_array).type(torch.LongTensor)
+
+        return imgs, desc_tensor, poses, index  # captions
 
     def __getitem__(self, index):
         return self.iterator(index)
