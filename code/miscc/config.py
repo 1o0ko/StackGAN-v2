@@ -34,7 +34,7 @@ __C.TREE.BASE_SIZE = 64
 __C.TEST = edict()
 __C.TEST.B_EXAMPLE = True
 __C.TEST.SAMPLE_NUM = 30000
-
+__C.TEST.NUM_IMAGES = 8
 
 # Training options
 __C.TRAIN = edict()
@@ -47,6 +47,7 @@ __C.TRAIN.GENERATOR_LR = 2e-4
 __C.TRAIN.FLAG = True
 __C.TRAIN.NET_G = ''
 __C.TRAIN.NET_D = ''
+__C.TRAIN.NUM_IMAGES = 8
 
 __C.TRAIN.COEFF = edict()
 __C.TRAIN.COEFF.KL = 2.0

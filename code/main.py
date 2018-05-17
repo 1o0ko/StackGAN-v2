@@ -76,6 +76,8 @@ if __name__ == "__main__":
         transforms.RandomCrop(imsize),
         transforms.RandomHorizontalFlip()])
 
+    image_transform = None
+
     if cfg.GAN.B_CONDITION:  # text to image task
         from datasets import SsenseDataset, SplitType
         dataset = SsenseDataset(
@@ -83,7 +85,7 @@ if __name__ == "__main__":
             cfg.TEXT.VOCAB_PATH,
             cfg.TEXT.MAX_LEN,
             cfg.DATASET_NAME,
-            split_name=SplitType.train,
+            split_name=SplitType.bigboi,
             base_size=cfg.TREE.BASE_SIZE,
             transform=image_transform)
     else:

@@ -1,6 +1,6 @@
 CONFIG_NAME: '3stages'
 
-EXPERIMENT_NAME: 'v2_bilstm_pretrained_big'
+EXPERIMENT_NAME: 'v2_bilstm_pretrained_big_no_transform'
 DATASET_NAME: 'ssense_256_256'
 
 TEXT_EMBEDDING_MODEL: 'bilstm'
@@ -29,6 +29,7 @@ TRAIN:
     GENERATOR_LR: 0.0002
     COEFF:
       UNCOND_LOSS: 1.0
+    NUM_IMAGES: 8
 
 
 GAN:
