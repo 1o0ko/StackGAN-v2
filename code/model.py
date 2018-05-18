@@ -193,7 +193,7 @@ class INIT_STAGE_G(nn.Module):
 
     def forward(self, z_code, c_code=None, p_code=None, cat_code=None):
         print('c_code: {}, z_code: {}'.format(c_code.size(), z_code.size()))
-        print('p_code: {}'.format(p_code.size())
+        print('p_code: {}'.format(p_code.size()))
         print(cfg.GAN.B_CONDITION)
         print(cfg.GAN.P_CONDITION)
         if cfg.GAN.B_CONDITION and c_code is not None:
