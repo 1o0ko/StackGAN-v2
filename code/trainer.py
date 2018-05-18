@@ -586,7 +586,7 @@ class condGANTrainer(object):
         else:
             print('NOT CUDA', cfg.CUDA)
             vids = Variable(txt_ids)
-            poses_tensor = Variable(poses).cuda()
+            poses_tensor = Variable(poses)
 
         for i in range(self.num_Ds):
             if cfg.CUDA:
