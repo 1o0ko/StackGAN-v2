@@ -492,10 +492,9 @@ class SsenseDataset(data.Dataset):
         return categories
 
     def load_h5_poses(self, data_dir):
-        pose_filename = '/ssense_%d_%d_%s.h5' % (
-            self.orig_imsize, self.orig_imsize, self.split_name)
-        print("Loading image file from %s" % pose_filename)
-        with h5py.File(data_dir + pose_filename) as pose_file:
+        filename = '%s_%s.h5' % (self.dataset_name, self.split_name)
+        print("Loading image file from %s" % filename)
+        with h5py.File(os.path.join(data_dir, filename)) as pose_file:
             poses = np.asarray(pose_file['input_pose'].value)
             print('loaded images, shape: ', poses.shape)
             self.data_size = poses.shape[0]
