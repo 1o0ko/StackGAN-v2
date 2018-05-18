@@ -28,8 +28,6 @@ from miscc.utils import mkdir_p, save_images_with_text
 from model import G_NET, D_NET64, D_NET128, D_NET256, D_NET512, D_NET1024, INCEPTION_V3
 from embedding_models.registry import EmbedderStore
 
-print(cfg.CUDA)
-
 
 # ################## Shared functions ###################
 def compute_mean_covariance(img):
