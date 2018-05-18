@@ -38,11 +38,7 @@ def drawCaption(img, caption, max_len):
 
 def save_images_with_text(
         lr_sample_batchs, hr_sample_batchs, sr_sample_batchs,
-<<<<<<< HEAD
-        texts_batch, batch_size, max_len,
-=======
         reals_batch, texts_batch, batch_size, max_len,
->>>>>>> master
         startID, save_dir=None):
 
     if save_dir and not os.path.isdir(save_dir):
@@ -61,15 +57,6 @@ def save_images_with_text(
         row2 = [padding]
         row3 = [padding]
 
-<<<<<<< HEAD
-        for j in range(np.minimum(8, lr_sample_batchs[0].shape[0])):
-            lr_img = lr_sample_batchs[i][j]
-            hr_img = hr_sample_batchs[i][j]
-            sr_img = sr_sample_batchs[i][j]
-
-            lr_re_sample = scipy.misc.imresize(lr_img, sr_img.shape[:2])
-            hr_re_sample = scipy.misc.imresize(hr_img, sr_img.shape[:2])
-=======
         for j in range(lr_sample_batchs[0].shape[0]):
             lr_img = lr_sample_batchs[i][j]
             hr_img = hr_sample_batchs[i][j]
@@ -81,7 +68,6 @@ def save_images_with_text(
 
             lr_re_sample = imresize(lr_img, sr_img.shape[:2])
             hr_re_sample = imresize(hr_img, sr_img.shape[:2])
->>>>>>> master
             row1.append(lr_re_sample)
             row2.append(hr_re_sample)
             row3.append(sr_img)
