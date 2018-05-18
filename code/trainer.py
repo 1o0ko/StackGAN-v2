@@ -648,9 +648,10 @@ class condGANTrainer(object):
         flag = count % 100
         batch_size = self.real_imgs[0].size(0)
         criterion, mu, logvar = self.criterion, self.mu, self.logvar
+        mu_pose, logvar_pose = self.mu_pose, self.logvar_pose
         real_labels = self.real_labels[:batch_size]
         for i in range(self.num_Ds):
-            outputs = self.netsD[i](self.fake_imgs[i], mu)
+            outputs = self.netsD[i](self.fake_imgs[i], mu, mu_pose)
             errG = criterion(outputs[0], real_labels)
             if len(outputs) > 1 and cfg.TRAIN.COEFF.UNCOND_LOSS > 0:
                 errG_patch = cfg.TRAIN.COEFF.UNCOND_LOSS *\
@@ -690,7 +691,7 @@ class condGANTrainer(object):
                     sum_cov = summary.scalar('G_like_cov1', like_cov1.data[0])
                     self.summary_writer.add_summary(sum_cov, count)
 
-        kl_loss = KL_loss(mu, logvar) * cfg.TRAIN.COEFF.KL
+        kl_loss = (KL_loss(mu, logvar), KL_loss(mu_pose, logvar_pose)) * cfg.TRAIN.COEFF.KL
         errG_total = errG_total + kl_loss
         errG_total.backward()
         self.optimizerG.step()
@@ -750,7 +751,7 @@ class condGANTrainer(object):
                 # (1) Generate fake images
                 ######################################################
                 noise.data.normal_(0, 1)
-                self.fake_imgs, self.mu, self.logvar = \
+                self.fake_imgs, self.mu, self.logvar, self.mu_pose, self.logvar_pose = \
                     self.netG(noise, self.txt_embedding)
 
                 #######################################################

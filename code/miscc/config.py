@@ -70,6 +70,12 @@ __C.TEXT.DIMENSION = 1024
 __C.TEXT.VOCAB_PATH = ''
 __C.TEXT.MAX_LEN = 15
 
+# POSE options
+__C.POSE = edict()
+__C.POSE.DIMENSION = 1
+__C.POSE.NB_POSES = 5
+__C.GAN.POSE_DIM = 32
+
 
 def _merge_a_into_b(a, b):
     """Merge config dictionary a into config dictionary b, clobbering the

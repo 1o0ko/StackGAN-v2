@@ -132,14 +132,49 @@ class CA_NET(nn.Module):
         return c_code, mu, logvar
 
 
+class POSE_NET(nn.Module):
+    # some code is modified from vae examples
+    # (https://github.com/pytorch/examples/blob/master/vae/main.py)
+    def __init__(self):
+        super(POSE_NET, self).__init__()
+        self.p_dim = cfg.POSE.DIMENSION
+        self.c_dim = cfg.GAN.POSE_DIM
+        self.emb = nn.Embedding(cfg.POSE.NB_POSES, cfg.POSE.DIMENSION)
+        self.fc = nn.Linear(self.p_dim, self.c_dim * 2, bias=True)
+        self.relu = nn.ReLU()  # TODO: check if we want to use diff activations
+
+    def encode(self, pose_id):
+        x = self.emb(pose_id)
+        x = x.view(-1, self.p_dim)
+        x = self.relu(self.fc(x))
+        mu = x[:, :self.c_dim]
+        logvar = x[:, self.c_dim:]
+        return mu, logvar
+
+    def reparametrize(self, mu, logvar):
+        std = logvar.mul(0.5).exp_()
+        if cfg.CUDA:
+            eps = torch.cuda.FloatTensor(std.size()).normal_()
+        else:
+            eps = torch.FloatTensor(std.size()).normal_()
+        eps = Variable(eps)
+        return eps.mul(std).add_(mu)
+
+    def forward(self, pose_embedding):
+        mu, logvar = self.encode(pose_embedding)
+        c_code = self.reparametrize(mu, logvar)
+        return c_code, mu, logvar
+
+
 class INIT_STAGE_G(nn.Module):
     def __init__(self, ngf):
         super(INIT_STAGE_G, self).__init__()
         self.gf_dim = ngf
+        self.in_dim = cfg.GAN.Z_DIM
         if cfg.GAN.B_CONDITION:
-            self.in_dim = cfg.GAN.Z_DIM + cfg.GAN.EMBEDDING_DIM
-        else:
-            self.in_dim = cfg.GAN.Z_DIM
+            self.in_dim += cfg.GAN.EMBEDDING_DIM
+        if cfg.GAN.P_CONDITION:
+            self.in_dim += cfg.GAN.POSE_DIM
         self.define_module()
 
     def define_module(self):
@@ -155,9 +190,11 @@ class INIT_STAGE_G(nn.Module):
         self.upsample3 = upBlock(ngf // 4, ngf // 8)
         self.upsample4 = upBlock(ngf // 8, ngf // 16)
 
-    def forward(self, z_code, c_code=None):
+    def forward(self, z_code, c_code=None, p_code=None, cat_code=None):
         if cfg.GAN.B_CONDITION and c_code is not None:
             in_code = torch.cat((c_code, z_code), 1)
+        elif cfg.GAN.B_CONDITION and c_code is not None and cfg.GAN.P_CONDITION and p_code is not None:
+            in_code = torch.cat((c_code, p_code, z_code), 1)
         else:
             in_code = z_code
         # state size 16ngf x 4 x 4
@@ -179,10 +216,11 @@ class NEXT_STAGE_G(nn.Module):
     def __init__(self, ngf, num_residual=cfg.GAN.R_NUM):
         super(NEXT_STAGE_G, self).__init__()
         self.gf_dim = ngf
+        self.ef_dim = cfg.GAN.Z_DIM
         if cfg.GAN.B_CONDITION:
-            self.ef_dim = cfg.GAN.EMBEDDING_DIM
-        else:
-            self.ef_dim = cfg.GAN.Z_DIM
+            self.ef_dim += cfg.GAN.EMBEDDING_DIM
+        if cfg.GAN.P_CONDITION:
+            self.ef_dim += cfg.GAN.POSE_DIM
         self.num_residual = num_residual
         self.define_module()
 
@@ -200,12 +238,12 @@ class NEXT_STAGE_G(nn.Module):
         self.residual = self._make_layer(ResBlock, ngf)
         self.upsample = upBlock(ngf, ngf // 2)
 
-    def forward(self, h_code, c_code):
+    def forward(self, h_code, c_code, p_code):
         s_size = h_code.size(2)
         c_code = c_code.view(-1, self.ef_dim, 1, 1)
         c_code = c_code.repeat(1, 1, s_size, s_size)
         # state size (ngf+egf) x in_size x in_size
-        h_c_code = torch.cat((c_code, h_code), 1)
+        h_c_code = torch.cat((c_code, p_code, h_code), 1)
         # state size ngf x in_size x in_size
         out_code = self.jointConv(h_c_code)
         out_code = self.residual(out_code)
@@ -238,12 +276,13 @@ class G_NET(nn.Module):
     def define_module(self):
         if cfg.GAN.B_CONDITION:
             self.ca_net = CA_NET()
+            self.pose_net = POSE_NET()
 
         if cfg.TREE.BRANCH_NUM > 0:
             self.h_net1 = INIT_STAGE_G(self.gf_dim * 16)
             self.img_net1 = GET_IMAGE_G(self.gf_dim)
         if cfg.TREE.BRANCH_NUM > 1:
-            self.h_net2 = NEXT_STAGE_G(self.gf_dim)
+            self.h_net2 = (self.gf_dim)
             self.img_net2 = GET_IMAGE_G(self.gf_dim // 2)
         if cfg.TREE.BRANCH_NUM > 2:
             self.h_net3 = NEXT_STAGE_G(self.gf_dim // 2)
@@ -256,30 +295,34 @@ class G_NET(nn.Module):
             self.h_net4 = NEXT_STAGE_G(self.gf_dim // 8, num_residual=1)
             self.img_net4 = GET_IMAGE_G(self.gf_dim // 16)
 
-    def forward(self, z_code, text_embedding=None):
+    def forward(self, z_code, text_embedding=None, pose_tensor=None):
         if cfg.GAN.B_CONDITION and text_embedding is not None:
             c_code, mu, logvar = self.ca_net(text_embedding)
         else:
             c_code, mu, logvar = z_code, None, None
+        if cfg.GAN.P_CONDITION and pose_tensor is not None:
+            p_code, mu_pose, logvar_pose = self.pose_net(pose_tensor)
+        else:
+            p_code, mu, logvar = z_code, None, None
         fake_imgs = []
         if cfg.TREE.BRANCH_NUM > 0:
-            h_code1 = self.h_net1(z_code, c_code)
+            h_code1 = self.h_net1(z_code, c_code, p_code)
             fake_img1 = self.img_net1(h_code1)
             fake_imgs.append(fake_img1)
         if cfg.TREE.BRANCH_NUM > 1:
-            h_code2 = self.h_net2(h_code1, c_code)
+            h_code2 = self.h_net2(h_code1, c_code, p_code)
             fake_img2 = self.img_net2(h_code2)
             fake_imgs.append(fake_img2)
         if cfg.TREE.BRANCH_NUM > 2:
-            h_code3 = self.h_net3(h_code2, c_code)
+            h_code3 = self.h_net3(h_code2, c_code, p_code)
             fake_img3 = self.img_net3(h_code3)
             fake_imgs.append(fake_img3)
         if cfg.TREE.BRANCH_NUM > 3:
-            h_code4 = self.h_net4(h_code3, c_code)
+            h_code4 = self.h_net4(h_code3, c_code, p_code)
             fake_img4 = self.img_net4(h_code4)
             fake_imgs.append(fake_img4)
 
-        return fake_imgs, mu, logvar
+        return fake_imgs, mu, logvar, mu_pose, logvar_pose
 
 
 # ############## D networks ################################################
@@ -330,6 +373,7 @@ class D_NET64(nn.Module):
         super(D_NET64, self).__init__()
         self.df_dim = cfg.GAN.DF_DIM
         self.ef_dim = cfg.GAN.EMBEDDING_DIM
+        self.ef_dim += cfg.GAN.POSE_DIM
         self.define_module()
 
     def define_module(self):
@@ -374,6 +418,7 @@ class D_NET128(nn.Module):
         super(D_NET128, self).__init__()
         self.df_dim = cfg.GAN.DF_DIM
         self.ef_dim = cfg.GAN.EMBEDDING_DIM
+        self.ef_dim += cfg.GAN.POSE_DIM
         self.define_module()
 
     def define_module(self):
@@ -422,6 +467,7 @@ class D_NET256(nn.Module):
         super(D_NET256, self).__init__()
         self.df_dim = cfg.GAN.DF_DIM
         self.ef_dim = cfg.GAN.EMBEDDING_DIM
+        self.ef_dim += cfg.GAN.POSE_DIM
         self.define_module()
 
     def define_module(self):
@@ -474,6 +520,7 @@ class D_NET512(nn.Module):
         super(D_NET512, self).__init__()
         self.df_dim = cfg.GAN.DF_DIM
         self.ef_dim = cfg.GAN.EMBEDDING_DIM
+        self.ef_dim += cfg.GAN.POSE_DIM
         self.define_module()
 
     def define_module(self):
@@ -530,6 +577,7 @@ class D_NET1024(nn.Module):
         super(D_NET1024, self).__init__()
         self.df_dim = cfg.GAN.DF_DIM
         self.ef_dim = cfg.GAN.EMBEDDING_DIM
+        self.ef_dim += cfg.GAN.POSE_DIM
         self.define_module()
 
     def define_module(self):
