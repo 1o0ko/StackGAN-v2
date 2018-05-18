@@ -175,7 +175,7 @@ class INIT_STAGE_G(nn.Module):
             self.in_dim += cfg.GAN.EMBEDDING_DIM
         if cfg.GAN.P_CONDITION:
             self.in_dim += cfg.GAN.POSE_DIM
-        print('in_dim: {}'self.in_dim)
+        print('in_dim: {}'.format(self.in_dim))
         self.define_module()
 
     def define_module(self):
