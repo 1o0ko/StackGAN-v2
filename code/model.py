@@ -192,18 +192,18 @@ class INIT_STAGE_G(nn.Module):
         self.upsample4 = upBlock(ngf // 8, ngf // 16)
 
     def forward(self, z_code, c_code=None, p_code=None, cat_code=None):
-        print('c_code: {}, z_code: {}'.format(c_code.size(), z_code.size()))
-        print('p_code: {}'.format(p_code.size()))
-        print(cfg.GAN.B_CONDITION)
-        print(cfg.GAN.P_CONDITION)
-        if cfg.GAN.B_CONDITION and c_code is not None:
+        # print('c_code: {}, z_code: {}'.format(c_code.size(), z_code.size()))
+        # print('p_code: {}'.format(p_code.size()))
+        # print(cfg.GAN.B_CONDITION)
+        # print(cfg.GAN.P_CONDITION)
+        if cfg.GAN.B_CONDITION and c_code is not None and cfg.GAN.P_CONDITION is False:
             in_code = torch.cat((c_code, z_code), 1)
         elif cfg.GAN.B_CONDITION and c_code is not None and cfg.GAN.P_CONDITION and p_code is not None:
             in_code = torch.cat((c_code, p_code, z_code), 1)
         else:
             in_code = z_code
 
-        print(in_code)
+        # print(in_code)
         # state size 16ngf x 4 x 4
         out_code = self.fc(in_code)
         out_code = out_code.view(-1, self.gf_dim, 4, 4)
