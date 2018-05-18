@@ -936,11 +936,7 @@ class condGANTrainer(object):
                     imgs256.append(normalize_(fake_imgs[2]))
 
                 save_images_with_text(
-<<<<<<< HEAD
-                    imgs64, imgs128, imgs256, txts,
-=======
                     imgs64, imgs128, imgs256, imgs, txts,
->>>>>>> master
                     batch_size, cfg.TEXT.MAX_LEN, count, output_dir)
 
                 count = count + batch_size + 1
