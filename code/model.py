@@ -175,7 +175,7 @@ class INIT_STAGE_G(nn.Module):
             self.in_dim += cfg.GAN.EMBEDDING_DIM
         if cfg.GAN.P_CONDITION:
             self.in_dim += cfg.GAN.POSE_DIM
-        print(self.in_dim)
+        print('in_dim: {}'.self.in_dim)
         self.define_module()
 
     def define_module(self):
@@ -192,7 +192,7 @@ class INIT_STAGE_G(nn.Module):
         self.upsample4 = upBlock(ngf // 8, ngf // 16)
 
     def forward(self, z_code, c_code=None, p_code=None, cat_code=None):
-        print(c_code, z_code)
+        print('c_code: {}, z_code: {}'.format(c_code.size(), z_code.size()))
         print(cfg.GAN.B_CONDITION)
         print(cfg.GAN.P_CONDITION)
         if cfg.GAN.B_CONDITION and c_code is not None:
