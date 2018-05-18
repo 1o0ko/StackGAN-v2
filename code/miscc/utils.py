@@ -2,6 +2,7 @@ import re
 import numpy as np
 import scipy.misc
 import os
+from scipy.misc import imresize
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -37,7 +38,7 @@ def drawCaption(img, caption, max_len):
 
 def save_images_with_text(
         lr_sample_batchs, hr_sample_batchs, sr_sample_batchs,
-        texts_batch, batch_size, max_len,
+        reals_batch, texts_batch, batch_size, max_len,
         startID, save_dir=None):
 
     if save_dir and not os.path.isdir(save_dir):
@@ -56,13 +57,17 @@ def save_images_with_text(
         row2 = [padding]
         row3 = [padding]
 
-        for j in range(np.minimum(8, lr_sample_batchs[0].shape[0])):
+        for j in range(lr_sample_batchs[0].shape[0]):
             lr_img = lr_sample_batchs[i][j]
             hr_img = hr_sample_batchs[i][j]
             sr_img = sr_sample_batchs[i][j]
+            if j == 0:
+                row1.append(imresize(reals_batch[0][i], sr_img.shape[:2]))
+                row2.append(imresize(reals_batch[1][i], sr_img.shape[:2]))
+                row3.append(imresize(reals_batch[2][i], sr_img.shape[:2]))
 
-            lr_re_sample = scipy.misc.imresize(lr_img, sr_img.shape[:2])
-            hr_re_sample = scipy.misc.imresize(hr_img, sr_img.shape[:2])
+            lr_re_sample = imresize(lr_img, sr_img.shape[:2])
+            hr_re_sample = imresize(hr_img, sr_img.shape[:2])
             row1.append(lr_re_sample)
             row2.append(hr_re_sample)
             row3.append(sr_img)
