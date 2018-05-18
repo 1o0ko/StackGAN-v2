@@ -567,7 +567,7 @@ class SsenseDataset(data.Dataset):
 
         poses = torch.from_numpy(poses_array).type(torch.LongTensor)
 
-        return imgs, desc_tensor, poses, index  # captions
+        return imgs, desc_tensor, poses, desc  # captions
 
     def __getitem__(self, index):
         return self.iterator(index)
