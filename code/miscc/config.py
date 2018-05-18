@@ -64,6 +64,7 @@ __C.GAN.Z_DIM = 100
 __C.GAN.NETWORK_TYPE = 'default'
 __C.GAN.R_NUM = 2
 __C.GAN.B_CONDITION = False
+__C.GAN.P_CONDITION = False
 
 __C.TEXT = edict()
 __C.TEXT.DIMENSION = 1024
