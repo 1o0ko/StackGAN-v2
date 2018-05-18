@@ -175,6 +175,7 @@ class INIT_STAGE_G(nn.Module):
             self.in_dim += cfg.GAN.EMBEDDING_DIM
         if cfg.GAN.P_CONDITION:
             self.in_dim += cfg.GAN.POSE_DIM
+        print(self.in_dim)
         self.define_module()
 
     def define_module(self):
@@ -197,6 +198,8 @@ class INIT_STAGE_G(nn.Module):
             in_code = torch.cat((c_code, p_code, z_code), 1)
         else:
             in_code = z_code
+
+        print(in_code)
         # state size 16ngf x 4 x 4
         out_code = self.fc(in_code)
         out_code = out_code.view(-1, self.gf_dim, 4, 4)
