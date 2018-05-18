@@ -577,11 +577,12 @@ class condGANTrainer(object):
         self.num_batches = len(self.data_loader)
 
     def prepare_data(self, data):
-        imgs, w_imgs, txt_ids, desc = data
+        imgs, w_imgs, txt_ids, poses, desc = data
 
         real_vimgs, wrong_vimgs = [], []
         if cfg.CUDA:
             vids = Variable(txt_ids).cuda()
+            poses_tensor = Variable(poses).cuda()
         else:
             vids = Variable(txt_ids)
 
@@ -593,12 +594,12 @@ class condGANTrainer(object):
                 real_vimgs.append(Variable(imgs[i]))
                 wrong_vimgs.append(Variable(w_imgs[i]))
 
-        return imgs, real_vimgs, wrong_vimgs, vids, desc
+        return imgs, real_vimgs, wrong_vimgs, vids, poses_tensor, desc
 
     def train_Dnet(self, idx, count):
         flag = count % 100
         batch_size = self.real_imgs[0].size(0)
-        criterion, mu = self.criterion, self.mu
+        criterion, mu, mu_pose = self.criterion, self.mu, self.mu_pose
 
         netD, optD = self.netsD[idx], self.optimizersD[idx]
         real_imgs = self.real_imgs[idx]
@@ -610,9 +611,9 @@ class condGANTrainer(object):
         real_labels = self.real_labels[:batch_size]
         fake_labels = self.fake_labels[:batch_size]
         # for real
-        real_logits = netD(real_imgs, mu.detach())
-        wrong_logits = netD(wrong_imgs, mu.detach())
-        fake_logits = netD(fake_imgs.detach(), mu.detach())
+        real_logits = netD(real_imgs, mu.detach(), mu_pose.detach())
+        wrong_logits = netD(wrong_imgs, mu.detach(), mu_pose.detach())
+        fake_logits = netD(fake_imgs.detach(), mu.detach(), mu_pose.detach())
         #
         errD_real = criterion(real_logits[0], real_labels)
         errD_wrong = criterion(wrong_logits[0], fake_labels)
@@ -744,7 +745,7 @@ class condGANTrainer(object):
                 # (0) Prepare training data
                 ######################################################
                 self.imgs_tcpu, self.real_imgs, self.wrong_imgs, \
-                    self.txt_ids, self.txts = self.prepare_data(data)
+                    self.txt_ids, self.poses, self.txts = self.prepare_data(data)
 
                 self.txt_embedding = self.netE(self.txt_ids)
                 #######################################################
@@ -752,7 +753,7 @@ class condGANTrainer(object):
                 ######################################################
                 noise.data.normal_(0, 1)
                 self.fake_imgs, self.mu, self.logvar, self.mu_pose, self.logvar_pose = \
-                    self.netG(noise, self.txt_embedding)
+                    self.netG(noise, self.txt_embedding, self.poses)
 
                 #######################################################
                 # (2) Update D network
