@@ -23,7 +23,6 @@ TEST:
 
 TRAIN:
     FLAG: True
-    NET_G: '/output/v2_bilstm_pretrained_big_3stages_2018_05_16_22_59_10/Model/netG_78000.pth'
     BATCH_SIZE: 8
 
 
