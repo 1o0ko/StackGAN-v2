@@ -34,7 +34,7 @@ GAN:
     Z_DIM: 100
     R_NUM: 2
     B_CONDITION: True
-    P_CONDITION: False
+    P_CONDITION: True
 
 TEXT:
     DIMENSION: 1024
