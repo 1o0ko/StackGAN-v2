@@ -242,8 +242,8 @@ class NEXT_STAGE_G(nn.Module):
 
     def forward(self, h_code, c_code, p_code):
         s_size = h_code.size(2)
-        print(c_code)
-        print(ef_dim)
+        print(c_code.size())
+        print(self.ef_dim)
         c_code = c_code.view(-1, self.ef_dim, 1, 1)
         c_code = c_code.repeat(1, 1, s_size, s_size)
         # state size (ngf+egf) x in_size x in_size
