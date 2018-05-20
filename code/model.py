@@ -307,9 +307,9 @@ class G_NET(nn.Module):
         else:
             p_code, mu, logvar = z_code, None, None
         fake_imgs = []
-        print(self.h_net1)
-        print(self.h_net2)
-        print(self.h_net3)
+        print('NET 1: \n{}'.format(self.h_net1)
+        print('NET 2: \n{}'.format(self.h_net2)
+        print('NET 3: \n{}'.format(self.h_net3)
         print('IMAGES')
         print(self.img_net1)
         print(self.img_net2)
