@@ -284,7 +284,7 @@ class G_NET(nn.Module):
             self.h_net1 = INIT_STAGE_G(self.gf_dim * 16)
             self.img_net1 = GET_IMAGE_G(self.gf_dim)
         if cfg.TREE.BRANCH_NUM > 1:
-            self.h_net2 = NEX_STAGE_G(self.gf_dim)
+            self.h_net2 = NEXT_STAGE_G(self.gf_dim)
             self.img_net2 = GET_IMAGE_G(self.gf_dim // 2)
         if cfg.TREE.BRANCH_NUM > 2:
             self.h_net3 = NEXT_STAGE_G(self.gf_dim // 2)
@@ -307,9 +307,9 @@ class G_NET(nn.Module):
         else:
             p_code, mu, logvar = z_code, None, None
         fake_imgs = []
-        print('NET 1: \n{}'.format(self.h_net1)
-        print('NET 2: \n{}'.format(self.h_net2)
-        print('NET 3: \n{}'.format(self.h_net3)
+        print('NET 1: \n{}'.format(self.h_net1))
+        print('NET 2: \n{}'.format(self.h_net2))
+        print('NET 3: \n{}'.format(self.h_net3))
         print('IMAGES')
         print(self.img_net1)
         print(self.img_net2)
