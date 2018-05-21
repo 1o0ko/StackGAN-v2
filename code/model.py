@@ -247,10 +247,11 @@ class NEXT_STAGE_G(nn.Module):
         print(c_code.size())
         print(p_code.size())
         print(self.ef_dim)
+        c_code = torch.cat((c_code, p_code), 1)
         c_code = c_code.view(-1, self.ef_dim, 1, 1)
         c_code = c_code.repeat(1, 1, s_size, s_size)
         # state size (ngf+egf) x in_size x in_size
-        h_c_code = torch.cat((c_code, p_code, h_code), 1)
+        h_c_code = torch.cat((c_code, h_code), 1)
         # state size ngf x in_size x in_size
         out_code = self.jointConv(h_c_code)
         out_code = self.residual(out_code)
