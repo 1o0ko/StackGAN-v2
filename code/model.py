@@ -389,7 +389,8 @@ class D_NET64(nn.Module):
         super(D_NET64, self).__init__()
         self.df_dim = cfg.GAN.DF_DIM
         self.ef_dim = cfg.GAN.EMBEDDING_DIM
-        self.ef_dim += cfg.GAN.POSE_DIM
+        if cfg.GAN.P_CONDITION:
+            self.ef_dim += cfg.GAN.POSE_DIM
         self.define_module()
 
     def define_module(self):
@@ -407,10 +408,16 @@ class D_NET64(nn.Module):
                 nn.Conv2d(ndf * 8, 1, kernel_size=4, stride=4),
                 nn.Sigmoid())
 
-    def forward(self, x_var, c_code=None):
+    def forward(self, x_var, c_code=None, p_code=None):
         x_code = self.img_code_s16(x_var)
+        b_cond = cfg.GAN.B_CONDITION and c_code is not None
+        p_cond = cfg.GAN.P_CONDITION and p_code is not None
+        if b_cond and p_cond:
+            c_code = torch.cat((c_code, p_code), 1)
+        elif p_cond and not b_cond:
+            c_code = p_code
 
-        if cfg.GAN.B_CONDITION and c_code is not None:
+        if b_cond or p_cond:
             c_code = c_code.view(-1, self.ef_dim, 1, 1)
             c_code = c_code.repeat(1, 1, 4, 4)
             # state size (ngf+egf) x 4 x 4
@@ -434,7 +441,8 @@ class D_NET128(nn.Module):
         super(D_NET128, self).__init__()
         self.df_dim = cfg.GAN.DF_DIM
         self.ef_dim = cfg.GAN.EMBEDDING_DIM
-        self.ef_dim += cfg.GAN.POSE_DIM
+        if cfg.GAN.P_CONDITION:
+            self.ef_dim += cfg.GAN.POSE_DIM
         self.define_module()
 
     def define_module(self):
@@ -454,12 +462,19 @@ class D_NET128(nn.Module):
                 nn.Conv2d(ndf * 8, 1, kernel_size=4, stride=4),
                 nn.Sigmoid())
 
-    def forward(self, x_var, c_code=None):
+    def forward(self, x_var, c_code=None, p_code=None):
         x_code = self.img_code_s16(x_var)
         x_code = self.img_code_s32(x_code)
         x_code = self.img_code_s32_1(x_code)
 
-        if cfg.GAN.B_CONDITION and c_code is not None:
+        b_cond = cfg.GAN.B_CONDITION and c_code is not None
+        p_cond = cfg.GAN.P_CONDITION and p_code is not None
+        if b_cond and p_cond:
+            c_code = torch.cat((c_code, p_code), 1)
+        elif p_cond and not b_cond:
+            c_code = p_code
+
+        if b_cond or p_cond:
             c_code = c_code.view(-1, self.ef_dim, 1, 1)
             c_code = c_code.repeat(1, 1, 4, 4)
             # state size (ngf+egf) x 4 x 4
@@ -483,7 +498,8 @@ class D_NET256(nn.Module):
         super(D_NET256, self).__init__()
         self.df_dim = cfg.GAN.DF_DIM
         self.ef_dim = cfg.GAN.EMBEDDING_DIM
-        self.ef_dim += cfg.GAN.POSE_DIM
+        if cfg.GAN.P_CONDITION:
+            self.ef_dim += cfg.GAN.POSE_DIM
         self.define_module()
 
     def define_module(self):
@@ -505,14 +521,21 @@ class D_NET256(nn.Module):
                 nn.Conv2d(ndf * 8, 1, kernel_size=4, stride=4),
                 nn.Sigmoid())
 
-    def forward(self, x_var, c_code=None):
+    def forward(self, x_var, c_code=None, p_code=None):
         x_code = self.img_code_s16(x_var)
         x_code = self.img_code_s32(x_code)
         x_code = self.img_code_s64(x_code)
         x_code = self.img_code_s64_1(x_code)
         x_code = self.img_code_s64_2(x_code)
 
-        if cfg.GAN.B_CONDITION and c_code is not None:
+        b_cond = cfg.GAN.B_CONDITION and c_code is not None
+        p_cond = cfg.GAN.P_CONDITION and p_code is not None
+        if b_cond and p_cond:
+            c_code = torch.cat((c_code, p_code), 1)
+        elif p_cond and not b_cond:
+            c_code = p_code
+
+        if b_cond or p_cond:
             c_code = c_code.view(-1, self.ef_dim, 1, 1)
             c_code = c_code.repeat(1, 1, 4, 4)
             # state size (ngf+egf) x 4 x 4
