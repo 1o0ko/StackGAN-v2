@@ -224,7 +224,7 @@ class NEXT_STAGE_G(nn.Module):
         if cfg.GAN.P_CONDITION and not cfg.GAN.B_CONDITION:
             self.ef_dim = cfg.GAN.POSE_DIM
         if cfg.GAN.P_CONDITION and cfg.GAN.B_CONDITION:
-            self.ef_dim = cfg.GAN.POSE_DIM + cfg.GAN.EMBEDEDDING_DIM
+            self.ef_dim = cfg.GAN.POSE_DIM + cfg.GAN.EMBEDDING_DIM
         self.num_residual = num_residual
         self.define_module()
 
