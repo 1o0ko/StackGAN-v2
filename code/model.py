@@ -219,10 +219,12 @@ class NEXT_STAGE_G(nn.Module):
         super(NEXT_STAGE_G, self).__init__()
         self.gf_dim = ngf
         self.ef_dim = cfg.GAN.Z_DIM
-        if cfg.GAN.B_CONDITION:
-            self.ef_dim += cfg.GAN.EMBEDDING_DIM
-        if cfg.GAN.P_CONDITION:
-            self.ef_dim += cfg.GAN.POSE_DIM
+        if cfg.GAN.B_CONDITION and not cfg.GAN.P_CONDITION:
+            self.ef_dim = cfg.GAN.EMBEDDING_DIM
+        if cfg.GAN.P_CONDITION and not cfg.GAN.B_CONDITION:
+            self.ef_dim = cfg.GAN.POSE_DIM
+        if cfg.GAN.P_CONDITION and cfg.GAN.B_CONDITION:
+            self.ef_dim = cfg.GAN.POSE_DIM + cfg.GAN.EMBEDEDDING_DIM
         self.num_residual = num_residual
         self.define_module()
 
@@ -243,6 +245,7 @@ class NEXT_STAGE_G(nn.Module):
     def forward(self, h_code, c_code, p_code):
         s_size = h_code.size(2)
         print(c_code.size())
+        print(p_code.size())
         print(self.ef_dim)
         c_code = c_code.view(-1, self.ef_dim, 1, 1)
         c_code = c_code.repeat(1, 1, s_size, s_size)
@@ -280,6 +283,7 @@ class G_NET(nn.Module):
     def define_module(self):
         if cfg.GAN.B_CONDITION:
             self.ca_net = CA_NET()
+        if cfg.P_CONDITION:
             self.pose_net = POSE_NET()
 
         if cfg.TREE.BRANCH_NUM > 0:
