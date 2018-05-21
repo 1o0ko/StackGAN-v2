@@ -283,7 +283,7 @@ class G_NET(nn.Module):
     def define_module(self):
         if cfg.GAN.B_CONDITION:
             self.ca_net = CA_NET()
-        if cfg.P_CONDITION:
+        if cfg.GAN.P_CONDITION:
             self.pose_net = POSE_NET()
 
         if cfg.TREE.BRANCH_NUM > 0:
