@@ -25,6 +25,8 @@ TEST:
 TRAIN:
     FLAG: True
     BATCH_SIZE: 8
+    MAX_EPOCH: 10
+    SNAPSHOT_INTERVAL: 3
 
 
 GAN:
