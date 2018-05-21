@@ -175,7 +175,6 @@ class INIT_STAGE_G(nn.Module):
             self.in_dim += cfg.GAN.EMBEDDING_DIM
         if cfg.GAN.P_CONDITION:
             self.in_dim += cfg.GAN.POSE_DIM
-        print('in_dim: {}'.format(self.in_dim))
         self.define_module()
 
     def define_module(self):
@@ -192,9 +191,6 @@ class INIT_STAGE_G(nn.Module):
         self.upsample4 = upBlock(ngf // 8, ngf // 16)
 
     def forward(self, z_code, c_code=None, p_code=None, cat_code=None):
-        print(c_code.size())
-        print(p_code.size())
-        print(z_code.size())
         if cfg.GAN.B_CONDITION and c_code is not None and cfg.GAN.P_CONDITION is False:
             in_code = torch.cat((c_code, z_code), 1)
         elif cfg.GAN.B_CONDITION and c_code is not None and cfg.GAN.P_CONDITION and p_code is not None:
@@ -247,9 +243,6 @@ class NEXT_STAGE_G(nn.Module):
 
     def forward(self, h_code, c_code, p_code):
         s_size = h_code.size(2)
-        print(c_code.size())
-        print(p_code.size())
-        print(self.ef_dim)
         c_code = torch.cat((c_code, p_code), 1)
         c_code = c_code.view(-1, self.ef_dim, 1, 1)
         c_code = c_code.repeat(1, 1, s_size, s_size)
@@ -317,13 +310,6 @@ class G_NET(nn.Module):
         else:
             p_code, mu, logvar = z_code, None, None
         fake_imgs = []
-        print('NET 1: \n{}'.format(self.h_net1))
-        print('NET 2: \n{}'.format(self.h_net2))
-        print('NET 3: \n{}'.format(self.h_net3))
-        print('IMAGES')
-        print(self.img_net1)
-        print(self.img_net2)
-        print(self.img_net3)
         if cfg.TREE.BRANCH_NUM > 0:
             h_code1 = self.h_net1(z_code, c_code, p_code)
             fake_img1 = self.img_net1(h_code1)
