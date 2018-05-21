@@ -793,7 +793,7 @@ class condGANTrainer(object):
                     backup_para = copy_G_params(self.netG)
                     load_params(self.netG, avg_param_G)
                     #
-                    self.fake_imgs, _, _ = self.netG(fixed_noise, self.txt_embedding, self.poses)
+                    self.fake_imgs, _, _, _, _ = self.netG(fixed_noise, self.txt_embedding, self.poses)
                     save_img_results(
                         self.imgs_tcpu, self.fake_imgs, self.num_Ds,
                         count, self.image_dir, self.summary_writer)
@@ -805,7 +805,7 @@ class condGANTrainer(object):
                         sample_noise.data.normal_(0, 1)
                         txt_embedding = self.txt_embedding[i].repeat(sample_size, 1)
                         pose = self.poses[i].repeat(sample_size, 1)
-                        fake_imgs, _, _ = self.netG(sample_noise, txt_embedding, pose)
+                        fake_imgs, _, _, _, _ = self.netG(sample_noise, txt_embedding, pose)
 
                         imgs64.append(normalize_(fake_imgs[0]))
                         imgs128.append(normalize_(fake_imgs[1]))
