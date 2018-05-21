@@ -694,7 +694,7 @@ class condGANTrainer(object):
                     sum_cov = summary.scalar('G_like_cov1', like_cov1.data[0])
                     self.summary_writer.add_summary(sum_cov, count)
 
-        kl_loss = (KL_loss(mu, logvar), KL_loss(mu_pose, logvar_pose)) * cfg.TRAIN.COEFF.KL
+        kl_loss = (KL_loss(mu, logvar) + KL_loss(mu_pose, logvar_pose)) * cfg.TRAIN.COEFF.KL
         errG_total = errG_total + kl_loss
         errG_total.backward()
         self.optimizerG.step()
