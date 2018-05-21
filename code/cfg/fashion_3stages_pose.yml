@@ -1,6 +1,6 @@
 CONFIG_NAME: '3stages'
 
-EXPERIMENT_NAME: 'v2_bilstm_pretrained_big_no_transform'
+EXPERIMENT_NAME: 'v2_big_listm_pose_conditionning'
 DATASET_NAME: 'ssense_256_256'
 
 TEXT_EMBEDDING_MODEL: 'bilstm'
@@ -11,7 +11,7 @@ DATA_DIR:   '/data/fashion_final'
 OUTPUT_DIR: '/output'
 
 GPU_ID: '0'
-WORKERS: 4
+WORKERS: 8
 
 
 TREE:
