@@ -74,7 +74,7 @@ __C.TEXT.MAX_LEN = 15
 # POSE options
 __C.POSE = edict()
 __C.POSE.DIMENSION = 1
-__C.POSE.NB_POSES = 5
+__C.POSE.NB_POSES = 7
 __C.GAN.POSE_DIM = 32
 
 
