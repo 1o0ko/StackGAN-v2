@@ -871,7 +871,7 @@ class condGANTrainer(object):
                 print('Make a new folder: ', folder)
                 mkdir_p(folder)
 
-            fullpath = '{}_{}_sentence{}_{}.png' % (s_tmp, imsize, sentenceID, i)
+            fullpath = '{}_{}_sentence{}_{}.png'.format(s_tmp, imsize, sentenceID, i)
             # range from [-1, 1] to [0, 255]
             img = images[i].add(1).div(2).mul(255).clamp(0, 255).byte()
             ndarr = img.permute(1, 2, 0).data.cpu().numpy()
