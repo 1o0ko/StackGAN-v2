@@ -865,13 +865,13 @@ class condGANTrainer(object):
 
     def save_singleimages(self, images, save_dir, split_dir, sentenceID, imsize):
         for i in range(images.size(0)):
-            s_tmp = '%s/single_samples/%s' % (save_dir, split_dir)
+            s_tmp = '{}/single_samples/{}'.format(save_dir, split_dir)
             folder = s_tmp[:s_tmp.rfind('/')]
             if not os.path.isdir(folder):
                 print('Make a new folder: ', folder)
                 mkdir_p(folder)
 
-            fullpath = '%s_%d_sentence%d_%d.png' % (s_tmp, imsize, sentenceID, i)
+            fullpath = '{}_{}_sentence{}_{}.png' % (s_tmp, imsize, sentenceID, i)
             # range from [-1, 1] to [0, 255]
             img = images[i].add(1).div(2).mul(255).clamp(0, 255).byte()
             ndarr = img.permute(1, 2, 0).data.cpu().numpy()
@@ -930,7 +930,7 @@ class condGANTrainer(object):
                     fake_imgs, _, _ = netG(noise, txt_embedding)
 
                     last_image = fake_imgs[2]
-                    self.save_singleimages(last_image, output_dir, step, 256, txts)
+                    self.save_singleimages(last_image, output_dir, step, i, 256)
                 count = count + batch_size + 1
 
 
