@@ -865,7 +865,7 @@ class condGANTrainer(object):
 
     def save_singleimages(self, images, save_dir, split_dir, sentenceID, imsize):
         for i in range(images.size(0)):
-            s_tmp = '%s/single_samples/%s/%s' % (save_dir, split_dir)
+            s_tmp = '%s/single_samples/%s' % (save_dir, split_dir)
             folder = s_tmp[:s_tmp.rfind('/')]
             if not os.path.isdir(folder):
                 print('Make a new folder: ', folder)
