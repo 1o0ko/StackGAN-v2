@@ -863,7 +863,7 @@ class condGANTrainer(object):
             super_img = torch.cat(super_img, 0)
             vutils.save_image(super_img, savename, nrow=10, normalize=True)
 
-    def save_singleimages(self, images, save_dir, split_dir, sentenceID, imsize, txts):
+    def save_singleimages(self, images, save_dir, split_dir, sentenceID, imsize):
         for i in range(images.size(0)):
             s_tmp = '%s/single_samples/%s/%s' % (save_dir, split_dir)
             folder = s_tmp[:s_tmp.rfind('/')]
@@ -871,7 +871,7 @@ class condGANTrainer(object):
                 print('Make a new folder: ', folder)
                 mkdir_p(folder)
 
-            fullpath = '%s_%d_sentence%d.png' % (s_tmp, imsize, sentenceID)
+            fullpath = '%s_%d_sentence%d_%d.png' % (s_tmp, imsize, sentenceID, i)
             # range from [-1, 1] to [0, 255]
             img = images[i].add(1).div(2).mul(255).clamp(0, 255).byte()
             ndarr = img.permute(1, 2, 0).data.cpu().numpy()
@@ -923,21 +923,14 @@ class condGANTrainer(object):
 
                 batch_size = imgs[0].size(0)
 
-                imgs64, imgs128, imgs256 = [], [], []
                 for i in range(0, batch_size):
                     noise.data.normal_(0, 1)
                     txt_embedding = txts_embeddings[i].repeat(sample_size, 1)
 
                     fake_imgs, _, _ = netG(noise, txt_embedding)
 
-                    imgs64.append(normalize_(fake_imgs[0]))
-                    imgs128.append(normalize_(fake_imgs[1]))
-                    imgs256.append(normalize_(fake_imgs[2]))
-
-                save_images_with_text(
-                    imgs64, imgs128, imgs256, imgs, txts,
-                    batch_size, cfg.TEXT.MAX_LEN, count, output_dir)
-
+                    last_image = fake_imgs[2]
+                    self.save_singleimages(last_image, output_dir, step, 256, txts)
                 count = count + batch_size + 1
 
 
